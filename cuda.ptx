@@ -1,0 +1,38 @@
+.version 7.5
+.target sm_70
+.address_size 64
+
+.visible .entry vecAdd(
+    .param .u64 A,
+    .param .u64 B,
+    .param .u64 C,
+    .param .u32 N
+)
+{
+    .reg .pred %p;
+    .reg .f32 %a_val, %b_val, %c_val;
+    .reg .u32 %i, %N;
+    .reg .u64 %a_ptr, %b_ptr, %c_ptr, %offset;
+
+    ld.param.u64 %a_ptr, [A];
+    ld.param.u64 %b_ptr, [B];
+    ld.param.u64 %c_ptr, [C];
+    ld.param.u32 %N, [N];
+
+    mov.u32 %i, %tid.x;
+    setp.ge.u32 %p, %i, %N;
+    @%p bra END;
+
+    sll.u32 %offset, %i, 2;
+    add.u64 %a_ptr, %a_ptr, %offset;
+    add.u64 %b_ptr, %b_ptr, %offset;
+    add.u64 %c_ptr, %c_ptr, %offset;
+
+    ld.global.f32 %a_val, [%a_ptr];
+    ld.global.f32 %b_val, [%b_ptr];
+    add.f32 %c_val, %a_val, %b_val;
+    st.global.f32 [%c_ptr], %c_val;
+
+END:
+    ret;
+}
