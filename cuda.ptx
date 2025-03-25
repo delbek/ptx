@@ -1,29 +1,35 @@
-.version 7.5
+.version 7.0
 .target sm_70
 .address_size 64
 
 .visible .entry vecAdd(
-    .param .u64 A,
-    .param .u64 B,
-    .param .u64 C,
-    .param .u32 N
+    .param .u64 vecAdd_param_A,
+    .param .u64 vecAdd_param_B,
+    .param .u64 vecAdd_param_C,
+    .param .u32 vecAdd_param_N
 )
 {
     .reg .pred %p;
     .reg .f32 %a_val, %b_val, %c_val;
     .reg .u32 %i, %N;
     .reg .u64 %a_ptr, %b_ptr, %c_ptr, %offset;
+    .reg .u32 %threadID, %blockID, %blockSize;
 
-    ld.param.u64 %a_ptr, [A];
-    ld.param.u64 %b_ptr, [B];
-    ld.param.u64 %c_ptr, [C];
-    ld.param.u32 %N, [N];
+    ld.param.u64 %a_ptr, [vecAdd_param_A];
+    ld.param.u64 %b_ptr, [vecAdd_param_B];
+    ld.param.u64 %c_ptr, [vecAdd_param_C];
+    ld.param.u32 %N, [vecAdd_param_N];
 
-    mov.u32 %i, %tid.x;
+    mov.u32 %threadID, %tid.x;
+    mov.u32 %blockID, %ctaid.x;
+    mov.u32 %blockSize, %ntid.x;
+
+    mad.lo.u32 %i, %blockID, %blockSize, %threadID;
+
     setp.ge.u32 %p, %i, %N;
     @%p bra END;
 
-    sll.u32 %offset, %i, 2;
+    mul.wide.u32 %offset, %i, 4;
     add.u64 %a_ptr, %a_ptr, %offset;
     add.u64 %b_ptr, %b_ptr, %offset;
     add.u64 %c_ptr, %c_ptr, %offset;

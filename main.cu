@@ -1,8 +1,10 @@
 #include "compiler.cuh"
 
+#define PTX_PATH "cuda.ptx"
+
 int main()
 {
-    CUfunction kernel = compilePTX("cuda.ptx", "vecAdd");
+    CUfunction kernel = compilePTX(PTX_PATH, "vecAdd");
 
     float* d_a;
     float* d_b;
@@ -29,4 +31,7 @@ int main()
     checkCudaRuntime(cudaFree(d_b));
     checkCudaRuntime(cudaFree(d_c));
     delete[] h_c;
+    
+    destroyContext();
+    return 0;
 }
