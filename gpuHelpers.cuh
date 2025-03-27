@@ -1,4 +1,6 @@
 #include <cuda_runtime.h>
+#include <cuda/pipeline>
+#include <cooperative_groups.h>
 #include <iostream>
 
 #define checkCudaDriver(call) do { \

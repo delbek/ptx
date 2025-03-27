@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.20.2)
 project(ptx)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -15,7 +15,7 @@ endif()
 include(CheckLanguage)
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER)
-    set(CMAKE_CUDA_ARCHITECTURES 70)
+    set(CMAKE_CUDA_ARCHITECTURES 80)
     enable_language(CUDA)
     add_definitions(-DGPU_AVAILABLE)
     set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G -lineinfo")
@@ -41,6 +41,7 @@ add_executable(ptx
         compiler.cu
         gpuHelpers.cuh
         compiler.cuh
+        kernels.cuh
 )
 
 target_link_libraries(ptx OpenMP::OpenMP_CXX)
