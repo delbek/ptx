@@ -2,118 +2,85 @@
 #include "kernels.cuh"
 #include "omp.h"
 
-#define PTX_PATH "/arf/home/delbek/ptx/kernel.ptx"
+#define KERNELS_DENIZ "/arf/home/delbek/ptx/kernels_deniz.ptx"
+#define KERNELS_NVCC "/arf/home/delbek/ptx/kernels_nvcc.ptx"
+
+void initializeData(float* data, int n) 
+{
+    for (int i = 0; i < n; ++i) 
+    {
+        data[i] = (float)rand() / RAND_MAX;
+    }
+}
 
 int main()
 {
+    CUfunction kernel = compilePTX(KERNELS_DENIZ, "_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i");
+
     float *d_a, *d_b, *d_c;
-    float* h_c;
-    float correctSum;
-    float sum;
-    const int N = 1000000;
+    float *h_a, *h_b, *h_c;
+    int N = 176947200;
+
+    h_a = new float[N];
+    h_b = new float[N];
     h_c = new float[N];
-    const int STAGE_COUNT = 4;
+
+    srand(time(0));
+    initializeData(h_a, N);
+    initializeData(h_b, N);
 
     checkCudaRuntime(cudaMalloc(&d_a, sizeof(float) * N));
     checkCudaRuntime(cudaMalloc(&d_b, sizeof(float) * N));
     checkCudaRuntime(cudaMalloc(&d_c, sizeof(float) * N));
 
-    checkCudaRuntime(cudaMemset(d_a, rand() % N, sizeof(float) * N));
-    checkCudaRuntime(cudaMemset(d_b, rand() % N, sizeof(float) * N));
+    checkCudaRuntime(cudaMemcpy(d_a, h_a, sizeof(float) * N, cudaMemcpyHostToDevice));
+    checkCudaRuntime(cudaMemcpy(d_b, h_b, sizeof(float) * N, cudaMemcpyHostToDevice));
+
     checkCudaRuntime(cudaDeviceSynchronize());
 
     double start, end;
     int blockSize;
     int gridSize;
 
-    auto noSharedMemSizeFunc = [](int blockSize) -> size_t {
+    auto sharedMemFunc = [](int block_size) -> size_t {
         return 0;
     };
 
-    // --- Benchmark vecAddNaive (no shared memory) ---
-    start = omp_get_wtime();
-    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize, 
-                             vecAddNaive, noSharedMemSizeFunc));
-    vecAddNaive<<<gridSize, blockSize>>>(d_a, d_b, d_c, N);
-    checkCudaRuntime(cudaDeviceSynchronize());
-    end = omp_get_wtime();
-    printf("Naive: %f seconds (grid=%d, block=%d)\n", end - start, gridSize, blockSize);
-    checkCudaRuntime(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-    correctSum = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        correctSum += h_c[i];
-    }
-    std::cout << "correctSum: " << correctSum << std::endl;
+    /*
+    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize,
+                             kernel, sharedMemFunc, 0));
+    */
+    gridSize = 108;
+    blockSize = 1024;
 
-    // --- Benchmark vecAddUnrolledBy4 (no shared memory) ---
-    start = omp_get_wtime();
-    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize, 
-                             vecAddUnrolledBy4, noSharedMemSizeFunc));
-    vecAddUnrolledBy4<<<gridSize, blockSize>>>(d_a, d_b, d_c, N);
-    checkCudaRuntime(cudaDeviceSynchronize());
-    end = omp_get_wtime();
-    printf("Unrolled by 4: %f seconds (grid=%d, block=%d)\n", end - start, gridSize, blockSize);
-    checkCudaRuntime(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-    sum = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        sum += h_c[i];
-    }
-    std::cout << "sum: " << sum << std::endl;
-    if (sum != correctSum)
-    {
-        printf("Error in vecAddUnrolledBy4\n");
-    }
-    
-    // --- Benchmark vecAddUnrolledBy4ILPMaximization (no shared memory) ---
-    start = omp_get_wtime();
-    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize, 
-                                vecAddUnrolledBy4ILPMaximization, noSharedMemSizeFunc));
-    vecAddUnrolledBy4ILPMaximization<<<gridSize, blockSize>>>(d_a, d_b, d_c, N);
-    checkCudaRuntime(cudaDeviceSynchronize());
-    end = omp_get_wtime();
-    printf("Unrolled by 4 ILP Maximization: %f seconds (grid=%d, block=%d)\n", end - start, gridSize, blockSize);
-    checkCudaRuntime(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-    sum = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        sum += h_c[i];
-    }
-    std::cout << "sum: " << sum << std::endl;
-    if (sum != correctSum)
-    {
-        printf("Error in vecAddUnrolledBy4ILPMaximization\n");
-    }
+    printf("Launching kernel with Grid Size = %d, Block Size = %d\n", gridSize, blockSize);
 
-    // --- Benchmark vecAddUnrolledBy4Pipelined (uses shared memory) ---
-    auto sharedMemSizeFunc = [](int bSize) -> size_t {
-        return STAGE_COUNT * bSize * 8 * sizeof(float);
-    };
     start = omp_get_wtime();
-    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize, 
-                             vecAddUnrolledBy4Pipelined<STAGE_COUNT>, sharedMemSizeFunc));
-    size_t sharedSize = sharedMemSizeFunc(blockSize);
-    vecAddUnrolledBy4Pipelined<STAGE_COUNT><<<gridSize, blockSize, sharedSize>>>(d_a, d_b, d_c, N);
+    void* args[] = { &d_a, &d_b, &d_c, &N };
+    checkCudaDriver(cuLaunchKernel(kernel,
+        gridSize, 1, 1,      
+        blockSize, 1, 1,     
+        0,                   
+        0,                   
+        args,                
+        0                    
+    ));
     checkCudaRuntime(cudaDeviceSynchronize());
     end = omp_get_wtime();
-    printf("Unrolled by 4 %d-stage Pipelined: %f seconds (grid=%d, block=%d, shared mem=%zu bytes)\n", 
-           STAGE_COUNT, end - start, gridSize, blockSize, sharedSize);
+    printf("vecAddUnrolledBy4ILPMaximization time: %f\n", end - start);
+
     checkCudaRuntime(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
-    sum = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        sum += h_c[i];
-    }
-    std::cout << "sum: " << sum << std::endl;
-    if (sum != correctSum)
-    {
-        printf("Error in vecAddUnrolledBy4Pipelined\n");
-    }
 
     checkCudaRuntime(cudaFree(d_a));
     checkCudaRuntime(cudaFree(d_b));
     checkCudaRuntime(cudaFree(d_c));
+
+    // Free host memory
+    delete[] h_a;
+    delete[] h_b;
     delete[] h_c;
+
+    destroyContext();
+
     return 0;
 }

@@ -38,6 +38,8 @@ CUfunction compilePTX(std::string filename, std::string kernelName)
 
     CUfunction kernel;
     checkCudaDriver(cuModuleGetFunction(&kernel, module, kernelName.c_str()));
+
+    std::cout << "Kernel compiled" << std::endl;
     return kernel;
 }
 

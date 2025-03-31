@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20.2)
-project(ptx)
+project(ptx LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -44,6 +44,12 @@ add_executable(ptx
         kernels.cuh
 )
 
+if(CMAKE_CUDA_COMPILER)
+    set_target_properties(ptx PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+endif()
+
 target_link_libraries(ptx OpenMP::OpenMP_CXX)
 
 if(CMAKE_CUDA_COMPILER)
@@ -56,7 +62,7 @@ if(CMAKE_CUDA_COMPILER)
 endif()
 
 if(MPI_FOUND)
-    target_link_libraries(suOpt
+    target_link_libraries(ptx
             MPI::MPI_CXX
     )
 endif()

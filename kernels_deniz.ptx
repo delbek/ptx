@@ -1,0 +1,102 @@
+.version 8.4
+.target sm_80
+.address_size 64
+
+.visible .entry _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i(
+	.param .u64 paramAPtr,
+	.param .u64 paramBPtr,
+	.param .u64 paramCPtr,
+	.param .u32 paramN
+)
+{
+	.reg .pred 	%isOutOfBounds, %continueLoop;
+	.reg .f32 	%valA0, %valA1, %valA2, %valA3, %valB0, %valB1, %valB2, %valB3, %sum0, %sum1, %sum2, %sum3;
+	.reg .b32 	%N, %blockDimX, %blockIdxX, %threadIdxX, %globalThreadIdx, %i, %loopBound, %gridDimX, %totalThreads, %stride;
+	.reg .b64 	%globalAPtr, %globalBPtr, %globalCPtr, %byteOffset0, %addrA0, %byteOffset1, %addrA1, %byteOffset2, %addrA2, %byteOffset3, %addrA3, %addrB0, %addrB1, %addrB2, %addrB3, %addrC0, %addrC1, %addrC2, %addrC3;
+
+	ld.param.u32 	%N, [paramN];
+	
+	mov.u32 	%blockDimX, %ntid.x;
+	mov.u32 	%blockIdxX, %ctaid.x;
+	mov.u32 	%threadIdxX, %tid.x;
+	mad.lo.u32 	%globalThreadIdx, %blockIdxX, %blockDimX, %threadIdxX;
+	shl.b32 	%i, %globalThreadIdx, 2;
+	add.u32 	%loopBound, %N, -4;
+
+	// Bottom tested loop entry
+	setp.gt.u32 			%isOutOfBounds, %i, %loopBound;
+	@%isOutOfBounds bra 	$L__BB2_3;
+
+	ld.param.u64	%globalAPtr, [paramAPtr];
+	ld.param.u64	%globalBPtr, [paramBPtr];
+	ld.param.u64 	%globalCPtr, [paramCPtr];
+
+	cvta.to.global.u64	%globalAPtr, %globalAPtr;
+	cvta.to.global.u64 	%globalBPtr, %globalBPtr;
+	cvta.to.global.u64 	%globalCPtr, %globalCPtr;
+
+	// Calculate loop stride
+	mov.u32 	%gridDimX, %nctaid.x;
+	mul.lo.u32 	%totalThreads, %blockDimX, %gridDimX;
+	shl.b32 	%stride, %totalThreads, 2;
+
+$L__BB2_2:
+	// Calculate addresses for a values
+	mul.wide.u32 	%byteOffset0, %i, 4;
+	add.u64 	%addrA0, %globalAPtr, %byteOffset0;
+
+	add.u64 	%byteOffset1, %byteOffset0, 4;
+	add.u64 	%addrA1, %globalAPtr, %byteOffset1;
+
+	add.u64 	%byteOffset2, %byteOffset1, 4;
+	add.u64 	%addrA2, %globalAPtr, %byteOffset2;
+
+	add.u64		%byteOffset3, %byteOffset2, 4;
+	add.u64		%addrA3, %globalAPtr, %byteOffset3;
+
+	// Load a values
+	ld.global.f32 	%valA0, [%addrA0];
+	ld.global.f32 	%valA1, [%addrA1];
+	ld.global.f32 	%valA2, [%addrA2];
+	ld.global.f32 	%valA3, [%addrA3];
+
+	// Calculate addresses for b values
+	add.u64 	%addrB0, %globalBPtr, %byteOffset0;
+	add.u64 	%addrB1, %globalBPtr, %byteOffset1;
+	add.u64 	%addrB2, %globalBPtr, %byteOffset2;
+	add.u64 	%addrB3, %globalBPtr, %byteOffset3;
+
+	// Load b values
+	ld.global.f32 	%valB0, [%addrB0];
+	ld.global.f32 	%valB1, [%addrB1];
+	ld.global.f32 	%valB2, [%addrB2];
+	ld.global.f32 	%valB3, [%addrB3];
+
+	// Perform additions
+	add.f32 		%sum0, %valA0, %valB0;
+	add.u64			%addrC0, %globalCPtr, %byteOffset0;
+	st.global.f32	[%addrC0], %sum0;
+
+	add.f32 		%sum1, %valA1, %valB1;
+	add.u64 		%addrC1, %globalCPtr, %byteOffset1;
+	st.global.f32 	[%addrC1], %sum1;
+
+	add.f32 		%sum2, %valA2, %valB2;
+	add.u64 		%addrC2, %globalCPtr, %byteOffset2;
+	st.global.f32 	[%addrC2], %sum2;
+
+	add.f32 		%sum3, %valA3, %valB3;
+	add.u64 		%addrC3, %globalCPtr, %byteOffset3;
+	st.global.f32 	[%addrC3], %sum3;
+
+	// Increment index
+	add.u32		%i, %i, %stride;
+
+	// Check loop condition
+	setp.le.u32 		%continueLoop, %i, %loopBound;
+	@%continueLoop bra 	$L__BB2_2;
+
+$L__BB2_3:
+	ret;
+
+}

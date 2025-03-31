@@ -12,7 +12,7 @@ __global__ void vecAddNaive(float* a, float* b, float* c, int N)
 __global__ void vecAddUnrolledBy4(float* a, float* b, float* c, int N)
 {
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x * 4))
+    for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
     {
         c[i] = a[i] + b[i];
         c[i + 1] = a[i + 1] + b[i + 1];
@@ -24,7 +24,7 @@ __global__ void vecAddUnrolledBy4(float* a, float* b, float* c, int N)
 __global__ void vecAddUnrolledBy4ILPMaximization(float* a, float* b, float* c, int N)
 {
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x * 4))
+    for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
     {
         float a0 = a[i];
         float a1 = a[i + 1];
@@ -40,6 +40,21 @@ __global__ void vecAddUnrolledBy4ILPMaximization(float* a, float* b, float* c, i
         c[i + 1] = a1 + b1;
         c[i + 2] = a2 + b2;
         c[i + 3] = a3 + b3;
+    }
+}
+
+__global__ void vecAddUnrolledBy4Vectorized(float* a, float* b, float* c, int N)
+{
+    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
+    {
+        float4 a0 = *reinterpret_cast<float4*>(a + i);
+        float4 b0 = *reinterpret_cast<float4*>(b + i);
+        float c0 = a0.x + b0.x;
+        float c1 = a0.y + b0.y;
+        float c2 = a0.z + b0.z;
+        float c3 = a0.w + b0.w;
+        *reinterpret_cast<float4*>(c + i) = make_float4(c0, c1, c2, c3);
     }
 }
 
