@@ -1,5 +1,5 @@
--how does warp aggregated atomic filter works slower than normal atomic filter, as opposed what this blog
+-How does the warp aggregated atomic filter work slower than the normal atomic filter, as opposed to what this blog
 claims: https://developer.nvidia.com/blog/cuda-pro-tip-optimized-filtering-warp-aggregated-atomics/
 
--why is there a performance difference between vector add ILP maximization code with vector add vectorized load
-with the former works faster than the latter?
+-Why is there a performance difference between vector add ILP maximization code and vector add vectorized load,
+with the former working faster than the latter?
