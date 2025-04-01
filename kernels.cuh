@@ -1,17 +1,20 @@
 #include "gpuHelpers.cuh"
+#include <cooperative_groups.h>
 
-__global__ void vecAddNaive(float* a, float* b, float* c, int N)
+namespace cg = cooperative_groups;
+
+__global__ void vecAddNaive(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (unsigned i = idx; i < N; i += gridDim.x * blockDim.x)
     {
         c[i] = a[i] + b[i];
     }
 }
 
-__global__ void vecAddUnrolledBy4(float* a, float* b, float* c, int N)
+__global__ void vecAddUnrolledBy4(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
     {
         c[i] = a[i] + b[i];
@@ -21,9 +24,9 @@ __global__ void vecAddUnrolledBy4(float* a, float* b, float* c, int N)
     }
 }
 
-__global__ void vecAddUnrolledBy4ILPMaximization(float* a, float* b, float* c, int N)
+__global__ void vecAddUnrolledBy4ILPMaximization(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
     {
         float a0 = a[i];
@@ -43,9 +46,9 @@ __global__ void vecAddUnrolledBy4ILPMaximization(float* a, float* b, float* c, i
     }
 }
 
-__global__ void vecAddUnrolledBy4Vectorized(float* a, float* b, float* c, int N)
+__global__ void vecAddUnrolledBy4Vectorized(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (unsigned i = idx * 4; i <= (N - 4); i += (gridDim.x * blockDim.x * 4))
     {
         float4 a0 = *reinterpret_cast<float4*>(a + i);
@@ -58,12 +61,12 @@ __global__ void vecAddUnrolledBy4Vectorized(float* a, float* b, float* c, int N)
     }
 }
 
-template <int STAGE_COUNT>
-__global__ void vecAddUnrolledBy4Pipelined(float* a, float* b, float* c, int N)
+template <unsigned STAGE_COUNT>
+__global__ void vecAddUnrolledBy4Pipelined(float* __restrict__ a, float* __restrict__ b, float* __restrict__ c, unsigned N)
 {
     static_assert(STAGE_COUNT > 1, "STAGE_COUNT must be greater than 1");
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    unsigned int noThreads = gridDim.x * blockDim.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned noThreads = gridDim.x * blockDim.x;
     extern __shared__ float shared[]; // size: STAGE_COUNT * 8 * blockDim.x
     float* aPtr = reinterpret_cast<float*>(shared); // size: STAGE_COUNT * 4 * blockDim.x
     float* bPtr = reinterpret_cast<float*>(shared + STAGE_COUNT * 4 * blockDim.x);  // size: STAGE_COUNT * 4 * blockDim.x
@@ -84,7 +87,7 @@ __global__ void vecAddUnrolledBy4Pipelined(float* a, float* b, float* c, int N)
         pipe.producer_commit();
     }
 
-    int stage = 0;
+    unsigned stage = 0;
     for (; idx < N; idx += noThreads * 4)
     {
         cuda::pipeline_consumer_wait_prior<STAGE_COUNT - 1>(pipe);
@@ -130,9 +133,9 @@ __global__ void vecAddUnrolledBy4Pipelined(float* a, float* b, float* c, int N)
     }
 }
 
-__global__ void euclideanDistance(float* xCoords, float* yCoords, float* dists, int N)
+__global__ void euclideanDistance(float* __restrict__ xCoords, float* __restrict__ yCoords, float* __restrict__ dists, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x))
     {
@@ -142,9 +145,9 @@ __global__ void euclideanDistance(float* xCoords, float* yCoords, float* dists, 
     }
 }
 
-__global__ void euclideanDistanceApprox(float* xCoords, float* yCoords, float* dists, int N)
+__global__ void euclideanDistanceApprox(float* __restrict__ xCoords, float* __restrict__ yCoords, float* __restrict__ dists, unsigned N)
 {
-    unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x))
     {
         float x = xCoords[i];
@@ -155,5 +158,39 @@ __global__ void euclideanDistanceApprox(float* xCoords, float* yCoords, float* d
             : "=f"(dists[i])
             : "f"(x * x + y * y)
         );
+    }
+}
+
+__global__ void atomicFilter(int* __restrict__ a, int* __restrict__ b, unsigned* __restrict__ counter, unsigned N)
+{
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x))
+    {
+        if (a[i] > 0.0f)
+        {
+            unsigned value = atomicAdd(counter, 1);
+            b[value] = a[i];
+        }
+    }
+}
+
+__global__ void warpAggregatedAtomicFilter(int* __restrict__ a, int* __restrict__ b, unsigned* __restrict__ counter, unsigned N)
+{
+    unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned myIndex;
+    for (unsigned i = idx; i < N; i += (gridDim.x * blockDim.x))
+    {
+        unsigned aValue = a[i];
+        if (aValue > 0.0f)
+        {
+            auto g = cg::coalesced_threads();
+            if (g.thread_rank() == 0)
+            {
+                myIndex = atomicAdd(counter, g.size());
+                g.shfl(myIndex, 0);
+            }
+            myIndex += g.thread_rank();
+            b[myIndex] = aValue;
+        }
     }
 }

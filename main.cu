@@ -5,82 +5,94 @@
 #define KERNELS_DENIZ "/arf/home/delbek/ptx/kernels_deniz.ptx"
 #define KERNELS_NVCC "/arf/home/delbek/ptx/kernels_nvcc.ptx"
 
-void initializeData(float* data, int n) 
+void initializeDataForAtomicFilter(int* data, int n, float filterRatio)
 {
-    for (int i = 0; i < n; ++i) 
+    for (int i = 0; i < n; ++i)
     {
-        data[i] = (float)rand() / RAND_MAX;
+        data[i] = (float)rand() / RAND_MAX < filterRatio ? 1 : -1;
     }
 }
 
-int main()
+void compareAtomicKernels()
 {
-    CUfunction kernel = compilePTX(KERNELS_DENIZ, "_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i");
+    int *d_a, *d_b;
+    unsigned *d_counter;
+    int *h_a;
+    unsigned *h_counter;
 
-    float *d_a, *d_b, *d_c;
-    float *h_a, *h_b, *h_c;
-    int N = 176947200;
-
-    h_a = new float[N];
-    h_b = new float[N];
-    h_c = new float[N];
+    unsigned N = 104857600;
+    h_a = new int[N];
+    h_counter = new unsigned(0);
 
     srand(time(0));
-    initializeData(h_a, N);
-    initializeData(h_b, N);
+    initializeDataForAtomicFilter(h_a, N, 0.5f);
 
-    checkCudaRuntime(cudaMalloc(&d_a, sizeof(float) * N));
-    checkCudaRuntime(cudaMalloc(&d_b, sizeof(float) * N));
-    checkCudaRuntime(cudaMalloc(&d_c, sizeof(float) * N));
+    checkCudaRuntime(cudaMalloc(&d_a, sizeof(int) * N));
+    checkCudaRuntime(cudaMalloc(&d_b, sizeof(int) * N));
+    checkCudaRuntime(cudaMalloc(&d_counter, sizeof(unsigned)));
 
-    checkCudaRuntime(cudaMemcpy(d_a, h_a, sizeof(float) * N, cudaMemcpyHostToDevice));
-    checkCudaRuntime(cudaMemcpy(d_b, h_b, sizeof(float) * N, cudaMemcpyHostToDevice));
-
-    checkCudaRuntime(cudaDeviceSynchronize());
+    int gridSize = 108;
+    int blockSize = 1024;
+    printf("Launching kernels with Grid Size = %d, Block Size = %d\n", gridSize, blockSize);
 
     double start, end;
-    int blockSize;
-    int gridSize;
 
-    auto sharedMemFunc = [](int block_size) -> size_t {
-        return 0;
-    };
+    // Naive Atomic Filter
+    CUfunction kernelNaive = compilePTX(KERNELS_NVCC, "_Z12atomicFilterPiS_Pjj");
 
-    /*
-    checkCudaRuntime(cudaOccupancyMaxPotentialBlockSizeVariableSMem(&gridSize, &blockSize,
-                             kernel, sharedMemFunc, 0));
-    */
-    gridSize = 108;
-    blockSize = 1024;
-
-    printf("Launching kernel with Grid Size = %d, Block Size = %d\n", gridSize, blockSize);
+    checkCudaRuntime(cudaMemcpy(d_a, h_a, sizeof(int) * N, cudaMemcpyHostToDevice));
+    checkCudaRuntime(cudaMemcpy(d_counter, h_counter, sizeof(unsigned), cudaMemcpyHostToDevice));
+    checkCudaRuntime(cudaDeviceSynchronize());
 
     start = omp_get_wtime();
-    void* args[] = { &d_a, &d_b, &d_c, &N };
-    checkCudaDriver(cuLaunchKernel(kernel,
+    void* args1[] = { &d_a, &d_b, &d_counter, &N };
+    checkCudaDriver(cuLaunchKernel(kernelNaive,
         gridSize, 1, 1,      
         blockSize, 1, 1,     
         0,                   
         0,                   
-        args,                
+        args1,                
         0                    
     ));
     checkCudaRuntime(cudaDeviceSynchronize());
     end = omp_get_wtime();
-    printf("vecAddUnrolledBy4ILPMaximization time: %f\n", end - start);
+    printf("Naive Atomic Filter time: %f\n", end - start);
+    destroyContext();
+    // ------------------------------------------------------------
 
-    checkCudaRuntime(cudaMemcpy(h_c, d_c, sizeof(float) * N, cudaMemcpyDeviceToHost));
+    // Aggregated Atomic Filter
+    CUfunction kernelAggregated = compilePTX(KERNELS_NVCC, "_Z26warpAggregatedAtomicFilterPiS_Pjj");
+
+    checkCudaRuntime(cudaMemcpy(d_a, h_a, sizeof(int) * N, cudaMemcpyHostToDevice));
+    checkCudaRuntime(cudaMemcpy(d_counter, h_counter, sizeof(unsigned), cudaMemcpyHostToDevice));
+    checkCudaRuntime(cudaDeviceSynchronize());
+
+    start = omp_get_wtime();
+    void* args2[] = { &d_a, &d_b, &d_counter, &N };
+    checkCudaDriver(cuLaunchKernel(kernelAggregated,
+        gridSize, 1, 1,      
+        blockSize, 1, 1,     
+        0,                   
+        0,                   
+        args2,                
+        0                    
+    ));
+    checkCudaRuntime(cudaDeviceSynchronize());
+    end = omp_get_wtime();
+    printf("Aggregated Atomic Filter time: %f\n", end - start);
+    destroyContext();
+    // ------------------------------------------------------------
 
     checkCudaRuntime(cudaFree(d_a));
     checkCudaRuntime(cudaFree(d_b));
-    checkCudaRuntime(cudaFree(d_c));
+    checkCudaRuntime(cudaFree(d_counter));
 
-    // Free host memory
     delete[] h_a;
-    delete[] h_b;
-    delete[] h_c;
+    delete[] h_counter;
+}
 
-    destroyContext();
-
+int main()
+{
+    compareAtomicKernels();
     return 0;
 }

@@ -26,15 +26,17 @@ CUfunction compilePTX(std::string filename, std::string kernelName)
     CUjit_option options[] = 
     {
         CU_JIT_ERROR_LOG_BUFFER,
-        CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES
+        CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
+        CU_JIT_OPTIMIZATION_LEVEL
     };
     void* optionVals[] = 
     {
         errorLog,
-        reinterpret_cast<void*>(sizeof(errorLog))
+        reinterpret_cast<void*>(sizeof(errorLog)),
+        reinterpret_cast<void*>(3)
     };
 
-    checkCudaDriver(cuModuleLoadDataEx(&module, ptxSource.c_str(), 2, options, optionVals));
+    checkCudaDriver(cuModuleLoadDataEx(&module, ptxSource.c_str(), 3, options, optionVals));
 
     CUfunction kernel;
     checkCudaDriver(cuModuleGetFunction(&kernel, module, kernelName.c_str()));

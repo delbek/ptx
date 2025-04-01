@@ -10,13 +10,13 @@
 .target sm_80
 .address_size 64
 
-	// .globl	_Z11vecAddNaivePfS_S_i
+	// .globl	_Z11vecAddNaivePfS_S_j
 
-.visible .entry _Z11vecAddNaivePfS_S_i(
-	.param .u64 _Z11vecAddNaivePfS_S_i_param_0,
-	.param .u64 _Z11vecAddNaivePfS_S_i_param_1,
-	.param .u64 _Z11vecAddNaivePfS_S_i_param_2,
-	.param .u32 _Z11vecAddNaivePfS_S_i_param_3
+.visible .entry _Z11vecAddNaivePfS_S_j(
+	.param .u64 _Z11vecAddNaivePfS_S_j_param_0,
+	.param .u64 _Z11vecAddNaivePfS_S_j_param_1,
+	.param .u64 _Z11vecAddNaivePfS_S_j_param_2,
+	.param .u32 _Z11vecAddNaivePfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -25,10 +25,10 @@
 	.reg .b64 	%rd<11>;
 
 
-	ld.param.u64 	%rd4, [_Z11vecAddNaivePfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z11vecAddNaivePfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z11vecAddNaivePfS_S_i_param_2];
-	ld.param.u32 	%r6, [_Z11vecAddNaivePfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z11vecAddNaivePfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z11vecAddNaivePfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z11vecAddNaivePfS_S_j_param_2];
+	ld.param.u32 	%r6, [_Z11vecAddNaivePfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r7, %ctaid.x;
 	mov.u32 	%r8, %tid.x;
@@ -46,8 +46,8 @@ $L__BB0_2:
 	mul.wide.u32 	%rd7, %r10, 4;
 	add.s64 	%rd8, %rd1, %rd7;
 	add.s64 	%rd9, %rd2, %rd7;
-	ld.global.f32 	%f1, [%rd9];
-	ld.global.f32 	%f2, [%rd8];
+	ld.global.nc.f32 	%f1, [%rd9];
+	ld.global.nc.f32 	%f2, [%rd8];
 	add.f32 	%f3, %f2, %f1;
 	add.s64 	%rd10, %rd3, %rd7;
 	st.global.f32 	[%rd10], %f3;
@@ -59,12 +59,12 @@ $L__BB0_3:
 	ret;
 
 }
-	// .globl	_Z17vecAddUnrolledBy4PfS_S_i
-.visible .entry _Z17vecAddUnrolledBy4PfS_S_i(
-	.param .u64 _Z17vecAddUnrolledBy4PfS_S_i_param_0,
-	.param .u64 _Z17vecAddUnrolledBy4PfS_S_i_param_1,
-	.param .u64 _Z17vecAddUnrolledBy4PfS_S_i_param_2,
-	.param .u32 _Z17vecAddUnrolledBy4PfS_S_i_param_3
+	// .globl	_Z17vecAddUnrolledBy4PfS_S_j
+.visible .entry _Z17vecAddUnrolledBy4PfS_S_j(
+	.param .u64 _Z17vecAddUnrolledBy4PfS_S_j_param_0,
+	.param .u64 _Z17vecAddUnrolledBy4PfS_S_j_param_1,
+	.param .u64 _Z17vecAddUnrolledBy4PfS_S_j_param_2,
+	.param .u32 _Z17vecAddUnrolledBy4PfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -73,10 +73,10 @@ $L__BB0_3:
 	.reg .b64 	%rd<23>;
 
 
-	ld.param.u64 	%rd4, [_Z17vecAddUnrolledBy4PfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z17vecAddUnrolledBy4PfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z17vecAddUnrolledBy4PfS_S_i_param_2];
-	ld.param.u32 	%r7, [_Z17vecAddUnrolledBy4PfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z17vecAddUnrolledBy4PfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z17vecAddUnrolledBy4PfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z17vecAddUnrolledBy4PfS_S_j_param_2];
+	ld.param.u32 	%r7, [_Z17vecAddUnrolledBy4PfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r8, %ctaid.x;
 	mov.u32 	%r9, %tid.x;
@@ -97,8 +97,8 @@ $L__BB1_2:
 	mul.wide.u32 	%rd7, %r16, 4;
 	add.s64 	%rd8, %rd3, %rd7;
 	add.s64 	%rd9, %rd2, %rd7;
-	ld.global.f32 	%f1, [%rd9];
-	ld.global.f32 	%f2, [%rd8];
+	ld.global.nc.f32 	%f1, [%rd9];
+	ld.global.nc.f32 	%f2, [%rd8];
 	add.f32 	%f3, %f2, %f1;
 	add.s64 	%rd10, %rd1, %rd7;
 	st.global.f32 	[%rd10], %f3;
@@ -106,8 +106,8 @@ $L__BB1_2:
 	mul.wide.u32 	%rd11, %r13, 4;
 	add.s64 	%rd12, %rd3, %rd11;
 	add.s64 	%rd13, %rd2, %rd11;
-	ld.global.f32 	%f4, [%rd13];
-	ld.global.f32 	%f5, [%rd12];
+	ld.global.nc.f32 	%f4, [%rd13];
+	ld.global.nc.f32 	%f5, [%rd12];
 	add.f32 	%f6, %f5, %f4;
 	add.s64 	%rd14, %rd1, %rd11;
 	st.global.f32 	[%rd14], %f6;
@@ -115,8 +115,8 @@ $L__BB1_2:
 	mul.wide.u32 	%rd15, %r14, 4;
 	add.s64 	%rd16, %rd3, %rd15;
 	add.s64 	%rd17, %rd2, %rd15;
-	ld.global.f32 	%f7, [%rd17];
-	ld.global.f32 	%f8, [%rd16];
+	ld.global.nc.f32 	%f7, [%rd17];
+	ld.global.nc.f32 	%f8, [%rd16];
 	add.f32 	%f9, %f8, %f7;
 	add.s64 	%rd18, %rd1, %rd15;
 	st.global.f32 	[%rd18], %f9;
@@ -124,8 +124,8 @@ $L__BB1_2:
 	mul.wide.u32 	%rd19, %r15, 4;
 	add.s64 	%rd20, %rd3, %rd19;
 	add.s64 	%rd21, %rd2, %rd19;
-	ld.global.f32 	%f10, [%rd21];
-	ld.global.f32 	%f11, [%rd20];
+	ld.global.nc.f32 	%f10, [%rd21];
+	ld.global.nc.f32 	%f11, [%rd20];
 	add.f32 	%f12, %f11, %f10;
 	add.s64 	%rd22, %rd1, %rd19;
 	st.global.f32 	[%rd22], %f12;
@@ -137,12 +137,12 @@ $L__BB1_3:
 	ret;
 
 }
-	// .globl	_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i
-.visible .entry _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i(
-	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_0,
-	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_1,
-	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_2,
-	.param .u32 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_3
+	// .globl	_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j
+.visible .entry _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j(
+	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_0,
+	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_1,
+	.param .u64 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_2,
+	.param .u32 _Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -151,10 +151,10 @@ $L__BB1_3:
 	.reg .b64 	%rd<23>;
 
 
-	ld.param.u64 	%rd4, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_2];
-	ld.param.u32 	%r7, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_2];
+	ld.param.u32 	%r7, [_Z32vecAddUnrolledBy4ILPMaximizationPfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r8, %ctaid.x;
 	mov.u32 	%r9, %tid.x;
@@ -177,24 +177,24 @@ $L__BB2_2:
 	add.s32 	%r13, %r16, 1;
 	mul.wide.u32 	%rd9, %r13, 4;
 	add.s64 	%rd10, %rd3, %rd9;
-	ld.global.f32 	%f1, [%rd10];
+	ld.global.nc.f32 	%f1, [%rd10];
 	add.s32 	%r14, %r16, 2;
 	mul.wide.u32 	%rd11, %r14, 4;
 	add.s64 	%rd12, %rd3, %rd11;
-	ld.global.f32 	%f2, [%rd12];
+	ld.global.nc.f32 	%f2, [%rd12];
 	add.s32 	%r15, %r16, 3;
 	mul.wide.u32 	%rd13, %r15, 4;
 	add.s64 	%rd14, %rd3, %rd13;
-	ld.global.f32 	%f3, [%rd14];
+	ld.global.nc.f32 	%f3, [%rd14];
 	add.s64 	%rd15, %rd2, %rd7;
 	add.s64 	%rd16, %rd2, %rd9;
-	ld.global.f32 	%f4, [%rd16];
+	ld.global.nc.f32 	%f4, [%rd16];
 	add.s64 	%rd17, %rd2, %rd11;
-	ld.global.f32 	%f5, [%rd17];
+	ld.global.nc.f32 	%f5, [%rd17];
 	add.s64 	%rd18, %rd2, %rd13;
-	ld.global.f32 	%f6, [%rd18];
-	ld.global.f32 	%f7, [%rd15];
-	ld.global.f32 	%f8, [%rd8];
+	ld.global.nc.f32 	%f6, [%rd18];
+	ld.global.nc.f32 	%f7, [%rd15];
+	ld.global.nc.f32 	%f8, [%rd8];
 	add.f32 	%f9, %f8, %f7;
 	add.s64 	%rd19, %rd1, %rd7;
 	st.global.f32 	[%rd19], %f9;
@@ -215,12 +215,12 @@ $L__BB2_3:
 	ret;
 
 }
-	// .globl	_Z27vecAddUnrolledBy4VectorizedPfS_S_i
-.visible .entry _Z27vecAddUnrolledBy4VectorizedPfS_S_i(
-	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_0,
-	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_1,
-	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_2,
-	.param .u32 _Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_3
+	// .globl	_Z27vecAddUnrolledBy4VectorizedPfS_S_j
+.visible .entry _Z27vecAddUnrolledBy4VectorizedPfS_S_j(
+	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_0,
+	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_1,
+	.param .u64 _Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_2,
+	.param .u32 _Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -229,10 +229,10 @@ $L__BB2_3:
 	.reg .b64 	%rd<11>;
 
 
-	ld.param.u64 	%rd4, [_Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_2];
-	ld.param.u32 	%r7, [_Z27vecAddUnrolledBy4VectorizedPfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_2];
+	ld.param.u32 	%r7, [_Z27vecAddUnrolledBy4VectorizedPfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r8, %ctaid.x;
 	mov.u32 	%r9, %tid.x;
@@ -252,9 +252,9 @@ $L__BB2_3:
 $L__BB3_2:
 	mul.wide.u32 	%rd7, %r13, 4;
 	add.s64 	%rd8, %rd1, %rd7;
-	ld.global.v4.f32 	{%f1, %f2, %f3, %f4}, [%rd8];
+	ld.global.nc.v4.f32 	{%f1, %f2, %f3, %f4}, [%rd8];
 	add.s64 	%rd9, %rd2, %rd7;
-	ld.global.v4.f32 	{%f9, %f10, %f11, %f12}, [%rd9];
+	ld.global.nc.v4.f32 	{%f9, %f10, %f11, %f12}, [%rd9];
 	add.s64 	%rd10, %rd3, %rd7;
 	add.f32 	%f17, %f4, %f12;
 	add.f32 	%f18, %f3, %f11;
@@ -269,12 +269,12 @@ $L__BB3_3:
 	ret;
 
 }
-	// .globl	_Z17euclideanDistancePfS_S_i
-.visible .entry _Z17euclideanDistancePfS_S_i(
-	.param .u64 _Z17euclideanDistancePfS_S_i_param_0,
-	.param .u64 _Z17euclideanDistancePfS_S_i_param_1,
-	.param .u64 _Z17euclideanDistancePfS_S_i_param_2,
-	.param .u32 _Z17euclideanDistancePfS_S_i_param_3
+	// .globl	_Z17euclideanDistancePfS_S_j
+.visible .entry _Z17euclideanDistancePfS_S_j(
+	.param .u64 _Z17euclideanDistancePfS_S_j_param_0,
+	.param .u64 _Z17euclideanDistancePfS_S_j_param_1,
+	.param .u64 _Z17euclideanDistancePfS_S_j_param_2,
+	.param .u32 _Z17euclideanDistancePfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -283,10 +283,10 @@ $L__BB3_3:
 	.reg .b64 	%rd<11>;
 
 
-	ld.param.u64 	%rd4, [_Z17euclideanDistancePfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z17euclideanDistancePfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z17euclideanDistancePfS_S_i_param_2];
-	ld.param.u32 	%r6, [_Z17euclideanDistancePfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z17euclideanDistancePfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z17euclideanDistancePfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z17euclideanDistancePfS_S_j_param_2];
+	ld.param.u32 	%r6, [_Z17euclideanDistancePfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r7, %ctaid.x;
 	mov.u32 	%r8, %tid.x;
@@ -304,8 +304,8 @@ $L__BB4_2:
 	mul.wide.u32 	%rd7, %r10, 4;
 	add.s64 	%rd8, %rd1, %rd7;
 	add.s64 	%rd9, %rd2, %rd7;
-	ld.global.f32 	%f1, [%rd8];
-	ld.global.f32 	%f2, [%rd9];
+	ld.global.nc.f32 	%f1, [%rd8];
+	ld.global.nc.f32 	%f2, [%rd9];
 	mul.f32 	%f3, %f2, %f2;
 	fma.rn.f32 	%f4, %f1, %f1, %f3;
 	sqrt.rn.f32 	%f5, %f4;
@@ -319,12 +319,12 @@ $L__BB4_3:
 	ret;
 
 }
-	// .globl	_Z23euclideanDistanceApproxPfS_S_i
-.visible .entry _Z23euclideanDistanceApproxPfS_S_i(
-	.param .u64 _Z23euclideanDistanceApproxPfS_S_i_param_0,
-	.param .u64 _Z23euclideanDistanceApproxPfS_S_i_param_1,
-	.param .u64 _Z23euclideanDistanceApproxPfS_S_i_param_2,
-	.param .u32 _Z23euclideanDistanceApproxPfS_S_i_param_3
+	// .globl	_Z23euclideanDistanceApproxPfS_S_j
+.visible .entry _Z23euclideanDistanceApproxPfS_S_j(
+	.param .u64 _Z23euclideanDistanceApproxPfS_S_j_param_0,
+	.param .u64 _Z23euclideanDistanceApproxPfS_S_j_param_1,
+	.param .u64 _Z23euclideanDistanceApproxPfS_S_j_param_2,
+	.param .u32 _Z23euclideanDistanceApproxPfS_S_j_param_3
 )
 {
 	.reg .pred 	%p<3>;
@@ -333,10 +333,10 @@ $L__BB4_3:
 	.reg .b64 	%rd<11>;
 
 
-	ld.param.u64 	%rd4, [_Z23euclideanDistanceApproxPfS_S_i_param_0];
-	ld.param.u64 	%rd5, [_Z23euclideanDistanceApproxPfS_S_i_param_1];
-	ld.param.u64 	%rd6, [_Z23euclideanDistanceApproxPfS_S_i_param_2];
-	ld.param.u32 	%r6, [_Z23euclideanDistanceApproxPfS_S_i_param_3];
+	ld.param.u64 	%rd4, [_Z23euclideanDistanceApproxPfS_S_j_param_0];
+	ld.param.u64 	%rd5, [_Z23euclideanDistanceApproxPfS_S_j_param_1];
+	ld.param.u64 	%rd6, [_Z23euclideanDistanceApproxPfS_S_j_param_2];
+	ld.param.u32 	%r6, [_Z23euclideanDistanceApproxPfS_S_j_param_3];
 	mov.u32 	%r1, %ntid.x;
 	mov.u32 	%r7, %ctaid.x;
 	mov.u32 	%r8, %tid.x;
@@ -355,8 +355,8 @@ $L__BB5_2:
 	add.s64 	%rd8, %rd1, %rd7;
 	add.s64 	%rd9, %rd2, %rd7;
 	add.s64 	%rd10, %rd3, %rd7;
-	ld.global.f32 	%f3, [%rd8];
-	ld.global.f32 	%f4, [%rd9];
+	ld.global.nc.f32 	%f3, [%rd8];
+	ld.global.nc.f32 	%f4, [%rd9];
 	mul.f32 	%f5, %f4, %f4;
 	fma.rn.f32 	%f2, %f3, %f3, %f5;
 	// begin inline asm
@@ -368,6 +368,127 @@ $L__BB5_2:
 	@%p2 bra 	$L__BB5_2;
 
 $L__BB5_3:
+	ret;
+
+}
+	// .globl	_Z12atomicFilterPiS_Pjj
+.visible .entry _Z12atomicFilterPiS_Pjj(
+	.param .u64 _Z12atomicFilterPiS_Pjj_param_0,
+	.param .u64 _Z12atomicFilterPiS_Pjj_param_1,
+	.param .u64 _Z12atomicFilterPiS_Pjj_param_2,
+	.param .u32 _Z12atomicFilterPiS_Pjj_param_3
+)
+{
+	.reg .pred 	%p<4>;
+	.reg .b32 	%r<13>;
+	.reg .b64 	%rd<11>;
+
+
+	ld.param.u64 	%rd4, [_Z12atomicFilterPiS_Pjj_param_0];
+	ld.param.u64 	%rd5, [_Z12atomicFilterPiS_Pjj_param_1];
+	ld.param.u64 	%rd6, [_Z12atomicFilterPiS_Pjj_param_2];
+	ld.param.u32 	%r7, [_Z12atomicFilterPiS_Pjj_param_3];
+	mov.u32 	%r1, %ntid.x;
+	mov.u32 	%r8, %ctaid.x;
+	mov.u32 	%r9, %tid.x;
+	mad.lo.s32 	%r12, %r8, %r1, %r9;
+	setp.ge.u32 	%p1, %r12, %r7;
+	@%p1 bra 	$L__BB6_5;
+
+	mov.u32 	%r10, %nctaid.x;
+	mul.lo.s32 	%r3, %r10, %r1;
+	cvta.to.global.u64 	%rd1, %rd4;
+	cvta.to.global.u64 	%rd2, %rd6;
+	cvta.to.global.u64 	%rd3, %rd5;
+
+$L__BB6_2:
+	mul.wide.u32 	%rd7, %r12, 4;
+	add.s64 	%rd8, %rd1, %rd7;
+	ld.global.nc.u32 	%r5, [%rd8];
+	setp.lt.s32 	%p2, %r5, 1;
+	@%p2 bra 	$L__BB6_4;
+
+	atom.global.add.u32 	%r11, [%rd2], 1;
+	mul.wide.u32 	%rd9, %r11, 4;
+	add.s64 	%rd10, %rd3, %rd9;
+	st.global.u32 	[%rd10], %r5;
+
+$L__BB6_4:
+	add.s32 	%r12, %r12, %r3;
+	setp.lt.u32 	%p3, %r12, %r7;
+	@%p3 bra 	$L__BB6_2;
+
+$L__BB6_5:
+	ret;
+
+}
+	// .globl	_Z26warpAggregatedAtomicFilterPiS_Pjj
+.visible .entry _Z26warpAggregatedAtomicFilterPiS_Pjj(
+	.param .u64 _Z26warpAggregatedAtomicFilterPiS_Pjj_param_0,
+	.param .u64 _Z26warpAggregatedAtomicFilterPiS_Pjj_param_1,
+	.param .u64 _Z26warpAggregatedAtomicFilterPiS_Pjj_param_2,
+	.param .u32 _Z26warpAggregatedAtomicFilterPiS_Pjj_param_3
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b32 	%r<33>;
+	.reg .b64 	%rd<11>;
+
+
+	ld.param.u64 	%rd4, [_Z26warpAggregatedAtomicFilterPiS_Pjj_param_0];
+	ld.param.u64 	%rd5, [_Z26warpAggregatedAtomicFilterPiS_Pjj_param_1];
+	ld.param.u64 	%rd6, [_Z26warpAggregatedAtomicFilterPiS_Pjj_param_2];
+	ld.param.u32 	%r13, [_Z26warpAggregatedAtomicFilterPiS_Pjj_param_3];
+	mov.u32 	%r1, %ntid.x;
+	mov.u32 	%r14, %ctaid.x;
+	mov.u32 	%r15, %tid.x;
+	mad.lo.s32 	%r29, %r14, %r1, %r15;
+	setp.ge.u32 	%p1, %r29, %r13;
+	@%p1 bra 	$L__BB7_7;
+
+	mov.u32 	%r17, %nctaid.x;
+	mul.lo.s32 	%r3, %r17, %r1;
+	cvta.to.global.u64 	%rd1, %rd4;
+	cvta.to.global.u64 	%rd2, %rd6;
+	cvta.to.global.u64 	%rd3, %rd5;
+	// begin inline asm
+	mov.u32 %r19, %lanemask_lt;
+	// end inline asm
+
+$L__BB7_2:
+	mul.wide.u32 	%rd7, %r29, 4;
+	add.s64 	%rd8, %rd1, %rd7;
+	ld.global.nc.u32 	%r6, [%rd8];
+	setp.eq.s32 	%p2, %r6, 0;
+	@%p2 bra 	$L__BB7_6;
+
+	// begin inline asm
+	activemask.b32 %r18;
+	// end inline asm
+	and.b32  	%r20, %r19, %r18;
+	setp.ne.s32 	%p3, %r20, 0;
+	@%p3 bra 	$L__BB7_5;
+
+	popc.b32 	%r21, %r18;
+	atom.global.add.u32 	%r32, [%rd2], %r21;
+	brev.b32 	%r22, %r18;
+	bfind.shiftamt.u32 	%r23, %r22;
+	mov.u32 	%r24, 31;
+	shfl.sync.idx.b32 	%r25|%p4, %r32, %r23, %r24, %r18;
+
+$L__BB7_5:
+	popc.b32 	%r28, %r20;
+	add.s32 	%r32, %r28, %r32;
+	mul.wide.u32 	%rd9, %r32, 4;
+	add.s64 	%rd10, %rd3, %rd9;
+	st.global.u32 	[%rd10], %r6;
+
+$L__BB7_6:
+	add.s32 	%r29, %r29, %r3;
+	setp.lt.u32 	%p5, %r29, %r13;
+	@%p5 bra 	$L__BB7_2;
+
+$L__BB7_7:
 	ret;
 
 }
